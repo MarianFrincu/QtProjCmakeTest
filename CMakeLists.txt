@@ -1,30 +1,55 @@
 cmake_minimum_required(VERSION 3.16)
 
+include(GNUInstallDirs)
+
 project(QtProj VERSION 0.1 LANGUAGES CXX)
 
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
-find_package(Qt6 REQUIRED COMPONENTS Widgets)
-qt_standard_project_setup()
+set(CMAKE_VERBOSE_MAKEFILE ON)
+set(CMAKE_INCLUDE_CURRENT_DIR ON)
 
-qt_add_executable(QtProj)
+set(CMAKE_AUTOMOC ON)
 
-add_subdirectory(src)
-add_subdirectory(include)
-add_subdirectory(ui)
+# Configure UIC and tell CMake where to find .ui files
+set(CMAKE_AUTOUIC ON)
+set(CMAKE_AUTOUIC_SEARCH_PATHS "${CMAKE_CURRENT_SOURCE_DIR}/ui")
 
-target_link_libraries(QtProj PRIVATE Qt${QT_VERSION_MAJOR}::Widgets)
+find_package(Qt6 REQUIRED COMPONENTS Core Widgets)
 
-set_target_properties(QtProj PROPERTIES
+add_executable(${PROJECT_NAME})
+
+target_include_directories(${PROJECT_NAME}
+    PRIVATE
+    ${CMAKE_CURRENT_SOURCE_DIR}/include
+)
+
+# Headers
+file(GLOB HEADER_FILES "${CMAKE_CURRENT_SOURCE_DIR}/include/*.h")
+
+# Sources
+file(GLOB SRC_FILES "${CMAKE_CURRENT_SOURCE_DIR}/src/*.cpp")
+
+target_sources(${PROJECT_NAME}
+    PUBLIC ${HEADER_FILES}
+    PRIVATE ${SRC_FILES}
+)
+
+target_link_libraries(${PROJECT_NAME}
+    PRIVATE
+    Qt6::Core
+    Qt6::Widgets
+)
+
+set_target_properties(${PROJECT_NAME} PROPERTIES
     MACOSX_BUNDLE_BUNDLE_VERSION ${PROJECT_VERSION}
     MACOSX_BUNDLE_SHORT_VERSION_STRING ${PROJECT_VERSION_MAJOR}.${PROJECT_VERSION_MINOR}
     MACOSX_BUNDLE TRUE
     WIN32_EXECUTABLE TRUE
 )
 
-include(GNUInstallDirs)
-install(TARGETS QtProj
+install(TARGETS ${PROJECT_NAME}
     BUNDLE DESTINATION .
     LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
     RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
